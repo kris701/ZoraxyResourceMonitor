@@ -41,9 +41,9 @@ func main() {
 		Description:   "A plugin to get simple resource usage of the Zoraxy host",
 		URL:           "https://github.com/kris701/zoraxyresourcemonitor",
 		Type:          plugin.PluginType_Utilities,
-		VersionMajor:  0,
+		VersionMajor:  1,
 		VersionMinor:  0,
-		VersionPatch:  1,
+		VersionPatch:  0,
 		UIPath:        UI_PATH,
 	})
 	if err != nil {
