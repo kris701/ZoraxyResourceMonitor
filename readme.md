@@ -1,7 +1,7 @@
 # Zoraxy Resource Monitor Plugin
 
-Tmp
-
+This is a simple plugin for [Zoraxy](https://github.com/tobychui/zoraxy) that adds a page where you can see the resource usage (CPU and Memory) over the last 24 hours.
+<img width="1899" height="937" alt="image" src="https://github.com/user-attachments/assets/34b4b13b-b591-4240-bea8-b4fc2b987ff6" />
 
 ## Plugin
 
