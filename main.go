@@ -19,12 +19,14 @@ import (
 )
 
 const (
-	PLUGIN_ID  = "zoraxyresourcemonitor"
-	UI_PATH    = "/"
-	WEB_ROOT   = "/www"
-	LOG_PATH   = "log.txt"
-	LOG_DELAY  = 1000
-	LOG_LENGTH = 100
+	PLUGIN_ID = "zoraxyresourcemonitor"
+	UI_PATH   = "/"
+	WEB_ROOT  = "/www"
+	LOG_PATH  = "log.txt"
+	// Once a minute
+	LOG_DELAY = 60000
+	// 1440 log entries
+	LOG_LENGTH = 1440
 )
 
 //go:embed www/*
@@ -86,7 +88,7 @@ func getData(w http.ResponseWriter, r *http.Request) {
 		line := scanner.Text()
 		lineSplit := strings.Split(line, ";")
 		response[lineSplit[0]] = make(map[string]string)
-		response[lineSplit[0]]["freeMemory"] = lineSplit[1]
+		response[lineSplit[0]]["usedMemory"] = lineSplit[1]
 		response[lineSplit[0]]["totalMemory"] = lineSplit[2]
 		response[lineSplit[0]]["cpu"] = lineSplit[3]
 	}
@@ -120,7 +122,7 @@ func logData() {
 	cpuData, _ := cpu.Percent(0, false)
 	cpuDataStr := strconv.FormatFloat(cpuData[0], 'f', -1, 64)
 
-	fStr += time.Now().Format(time.RFC3339) + ";" + strconv.FormatUint(mem.FreeMemory(), 10) + ";" + strconv.FormatUint(mem.TotalMemory(), 10) + ";" + cpuDataStr + "\n"
+	fStr += time.Now().Format(time.RFC3339) + ";" + strconv.FormatUint(mem.TotalMemory()-mem.FreeMemory(), 10) + ";" + strconv.FormatUint(mem.TotalMemory(), 10) + ";" + cpuDataStr + "\n"
 
 	f.Truncate(0)
 	f.WriteString(fStr)

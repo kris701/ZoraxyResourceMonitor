@@ -10,7 +10,7 @@
     <script src="/script/utils.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/main.css">
-    <title>Top Monitor</title>
+    <title>Resource Monitor</title>
     <style>
         body {
             background:none;
@@ -29,34 +29,8 @@
             word-wrap: break-word;
         }
 
-        .topmonitor-dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-
-        .topmonitor-card {
-            background-color: var(--theme_bg);
-            border: 1px solid var(--theme_divider);
-            color: var(--text_color);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .topmonitor-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: var(--text_color);
-        }
-
-        .topmonitor-value {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: var(--text_color);
+        .graphContainer {
+            height: 300px
         }
     </style>
 </head>
@@ -64,43 +38,198 @@
     <!-- Dark theme script must be included after body tag-->
     <link rel="stylesheet" href="/darktheme.css">
     <script src="/script/darktheme.js"></script>
+    <script src="/script/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@0.1.1"></script>
+
     <div class="ui container">
         <div class="ui basic segment">
-            <h1>Zoraxy Top Monitor Plugin</h1>
+            <h1>Zoraxy Resource Monitor Plugin</h1>
             
             <p>With this plugin you can easily see the resource usage of your Zoraxy server.</p>
+            <p>This auto updates every minute and shows data from the last 24 hours.</p>
             <p>
-                GitHub Repository: <a href="https://github.com/kris701/zoraxytopmonitor">https://github.com/kris701/zoraxytopmonitor</a>
+                GitHub Repository: <a href="https://github.com/kris701/zoraxyresourcemonitor">https://github.com/kris701/zoraxyresourcemonitor</a>
             </p>
         </div>
 
         <div class="ui divider"></div>
 
         <div class="ui basic segment">
-            <h2>Status</h2>
-            <button class="ui basic small button" onclick="updateData()">
-                <i class="refresh icon"></i>
-                Refresh
-            </button>
-
-            <p>Data here</p>
+            <div id="cpuActWrapper" class="graphContainer" style="position: relative;">
+                <canvas id="cpuActivity"></canvas>
+            </div>
+            <div id="memActWrapper" class="graphContainer" style="position: relative;">
+                <canvas id="memActivity"></canvas>
+            </div>
         </div>
     </div>
 	
 	<script>
+        var cpuValues = [];
+        var usedMemValues = [];
+        var maxMemValues = [];
+        var cpuStatisticChart;
+        var memStatisticChart;
+
         function updateData() {
             $.ajax({
                 url: `./api/data`,
                 type: 'GET',
                 success: function(data) {
-                    console.log(data)
+                    cpuValues = []
+                    usedMemValues = []
+                    maxMemValues = []
+
+                    var keys = Object.keys(data)
+                    keys.forEach(x => {
+                        cpuValues.push({ key: new Date(x), value: parseFloat(data[x]["cpu"]) })
+                        usedMemValues.push({ key: new Date(x), value: parseFloat(data[x]["usedMemory"]) / 1000000 })
+                        maxMemValues.push({ key: new Date(x), value: parseFloat(data[x]["totalMemory"]) / 1000000 })
+                    });
+
+                    cpuStatisticChart.data.datasets[0].data = cpuValues.map(x => x.value);
+                    cpuStatisticChart.data.labels = cpuValues.map(x => x.key);
+                    cpuStatisticChart.update();
+
+                    memStatisticChart.data.datasets[0].data = usedMemValues.map(x => x.value);
+                    memStatisticChart.data.datasets[1].data = maxMemValues.map(x => x.value);
+                    memStatisticChart.data.labels = usedMemValues.map(x => x.key);
+                    memStatisticChart.update();
                 },
                 error: function(xhr, status, error) {
                 }
             });
         }
 
+        cpuStatisticChart = new Chart(
+            document.getElementById('cpuActivity'),
+            {
+                type: 'line',
+                responsive: true,
+                resizeDelay: 300,
+                options: {
+                    animation: false,
+                    maintainAspectRatio: false,
+                    bezierCurve: true,
+                    tooltips: {enabled: false},
+                    hover: {mode: null},
+                    //stepped: 'middle',
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: "right",
+                        },
+                        title: {
+                            display: true,
+                            text: 'CPU Statistic'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            type: 'time'
+                        },
+                        y: {
+                            display: true,
+                            gridLines: {
+                                display: true
+                            },
+                            ticks: {
+                                callback: function(val, index) {
+                                    return val + "%";
+                                }
+                            }
+                        }
+                    }
+                },
+                data: {
+                    labels: cpuValues.map(x => key),
+                    datasets: [
+                        {
+                            label: 'CPU',
+                            data: cpuValues.map(x => value),
+                            borderColor: "#484bb8",
+                            borderWidth: 1,
+                            backgroundColor: 'rgba(72, 75, 184, 0.2)',
+                            fill: true,
+                            pointStyle: false,
+                        }
+                    ]
+                }
+            }
+        );
+
+        memStatisticChart = new Chart(
+            document.getElementById('memActivity'),
+            {
+                type: 'line',
+                responsive: true,
+                resizeDelay: 300,
+                options: {
+                    animation: false,
+                    maintainAspectRatio: false,
+                    bezierCurve: true,
+                    tooltips: {enabled: false},
+                    hover: {mode: null},
+                    //stepped: 'middle',
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: "right",
+                        },
+                        title: {
+                            display: true,
+                            text: 'Memory Statistic'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            type: 'time'
+                        },
+                        y: {
+                            display: true,
+                            gridLines: {
+                                display: true
+                            },
+                            ticks: {
+                                callback: function(val, index) {
+                                    return val + "MB";
+                                }
+                            }
+                        }
+                    }
+                },
+                data: {
+                    labels: usedMemValues.map(x => key),
+                    datasets: [
+                        {
+                            label: 'Used',
+                            data: usedMemValues.map(x => value),
+                            borderColor: "#484bb8",
+                            borderWidth: 1,
+                            backgroundColor: 'rgba(72, 75, 184, 0.2)',
+                            fill: true,
+                            pointStyle: false,
+                        },
+                        {
+                            label: 'Total',
+                            data: maxMemValues.map(x => value),
+                            borderColor: "#484bb8",
+                            borderWidth: 1,
+                            backgroundColor: 'rgba(72, 75, 184, 0.2)',
+                            fill: true,
+                            pointStyle: false,
+                        }
+                    ]
+                }
+            }
+        );
+
         updateData();
+        setInterval(updateData, 60000);
+        
 	</script>
 </body>
 </html>
