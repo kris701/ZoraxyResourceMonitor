@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- CSRF token, if your plugin need to make POST request to backend -->
+    <meta name="zoraxy.csrf.Token" content="{{.csrfToken}}">
+    <link rel="stylesheet" href="/script/semantic/semantic.min.css">
+    <script src="/script/jquery-3.6.0.min.js"></script>
+    <script src="/script/semantic/semantic.min.js"></script>
+    <script src="/script/utils.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/main.css">
+    <title>Top Monitor</title>
+    <style>
+        body {
+            background:none;
+            background-color: unset !important;
+        }
+
+        pre {
+            background-color: var(--theme_bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            padding: 10px;
+            font-size: 13px;
+            line-height: 1.4;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .topmonitor-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .topmonitor-card {
+            background-color: var(--theme_bg);
+            border: 1px solid var(--theme_divider);
+            color: var(--text_color);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .topmonitor-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--text_color);
+        }
+
+        .topmonitor-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text_color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Dark theme script must be included after body tag-->
+    <link rel="stylesheet" href="/darktheme.css">
+    <script src="/script/darktheme.js"></script>
+    <div class="ui container">
+        <div class="ui basic segment">
+            <h1>Zoraxy Top Monitor Plugin</h1>
+            
+            <p>With this plugin you can easily see the resource usage of your Zoraxy server.</p>
+            <p>
+                GitHub Repository: <a href="https://github.com/kris701/zoraxytopmonitor">https://github.com/kris701/zoraxytopmonitor</a>
+            </p>
+        </div>
+
+        <div class="ui divider"></div>
+
+        <div class="ui basic segment">
+            <h2>Status</h2>
+            <button class="ui basic small button" onclick="updateData()">
+                <i class="refresh icon"></i>
+                Refresh
+            </button>
+
+            <p>Data here</p>
+        </div>
+    </div>
+	
+	<script>
+        function updateData() {
+            $.ajax({
+                url: `./api/data`,
+                type: 'GET',
+                success: function(data) {
+                    console.log(data)
+                },
+                error: function(xhr, status, error) {
+                }
+            });
+        }
+
+        updateData();
+	</script>
+</body>
+</html>

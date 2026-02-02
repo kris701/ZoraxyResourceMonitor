@@ -1,0 +1,19 @@
+{
+ "id": "zoraxyresourcemonitor",
+ "name": "Resource Monitor",
+ "author": "Kristian Skov Johansen",
+ "author_contact": "kris701kj@gmail.com",
+ "description": "A plugin to get simple resource usage of the Zoraxy host",
+ "url": "https://github.com/kris701/zoraxyresourcemonitor",
+ "type": 1,
+ "version_major": 0,
+ "version_minor": 0,
+ "version_patch": 1,
+ "static_capture_paths": null,
+ "static_capture_ingress": "",
+ "dynamic_capture_sniff": "",
+ "dynamic_capture_ingress": "",
+ "ui_path": "/",
+ "subscription_path": "",
+ "subscriptions_events": null
+}
