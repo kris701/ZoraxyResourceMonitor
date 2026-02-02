@@ -20,6 +20,7 @@ $j = Start-Job -Name ZoraxyServer -ArgumentList $currentDir -ScriptBlock {
     Set-Location $args[0]
     $currentDir = (Get-Item .).FullName
     echo $currentDir
+    wsl --cd "$currentDir/dev/plugins/zoraxyresourcemonitor" --user root chmod 777 zoraxyresourcemonitor
     wsl --cd "$currentDir/dev" --user root ./zoraxy -noauth=true -port=:8564 -sshlb=true
 }
 echo "Done!"

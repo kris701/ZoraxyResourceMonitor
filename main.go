@@ -1,12 +1,16 @@
 package main
 
 import (
+	"bufio"
 	"embed"
 	_ "embed"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
+	"time"
 
 	mem "github.com/pbnjay/memory"
 	cpu "github.com/shirou/gopsutil/cpu"
@@ -15,9 +19,12 @@ import (
 )
 
 const (
-	PLUGIN_ID = "zoraxyresourcemonitor"
-	UI_PATH   = "/"
-	WEB_ROOT  = "/www"
+	PLUGIN_ID  = "zoraxyresourcemonitor"
+	UI_PATH    = "/"
+	WEB_ROOT   = "/www"
+	LOG_PATH   = "log.txt"
+	LOG_DELAY  = 1000
+	LOG_LENGTH = 100
 )
 
 //go:embed www/*
@@ -43,13 +50,21 @@ func main() {
 
 	embedWebRouter := plugin.NewPluginEmbedUIRouter(PLUGIN_ID, &content, WEB_ROOT, UI_PATH)
 	embedWebRouter.RegisterTerminateHandler(func() {
-		fmt.Println("Top Monitor Plugin Exited")
+		fmt.Println("Resource Monitor Plugin Exited")
 	}, nil)
 
 	embedWebRouter.HandleFunc("/api/data", getData, nil)
 
+	// Background saving of resource usage
+	go func() {
+		for {
+			logData()
+			time.Sleep(LOG_DELAY * time.Millisecond)
+		}
+	}()
+
 	http.Handle(UI_PATH, embedWebRouter.Handler())
-	fmt.Println("Top Monitor started at http://127.0.0.1:" + strconv.Itoa(runtimeCfg.Port))
+	fmt.Println("Resource Monitor started at http://127.0.0.1:" + strconv.Itoa(runtimeCfg.Port))
 	err = http.ListenAndServe("127.0.0.1:"+strconv.Itoa(runtimeCfg.Port), nil)
 	if err != nil {
 		panic(err)
@@ -59,14 +74,66 @@ func main() {
 func getData(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	response := map[string]any{}
+	f, err := os.OpenFile(LOG_PATH, os.O_RDONLY, 0777)
+	if err != nil {
+		http.Error(w, "Could not open log file: "+err.Error(), http.StatusInternalServerError)
+	}
 
-	response["freeMemory"] = mem.FreeMemory()
-	response["totalMemory"] = mem.TotalMemory()
+	response := map[string](map[string]string){}
 
-	response["cpuUsage"], _ = cpu.Percent(0, false)
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		lineSplit := strings.Split(line, ";")
+		response[lineSplit[0]] = make(map[string]string)
+		response[lineSplit[0]]["freeMemory"] = lineSplit[1]
+		response[lineSplit[0]]["totalMemory"] = lineSplit[2]
+		response[lineSplit[0]]["cpu"] = lineSplit[3]
+	}
+
+	f.Close()
+
+	if err := scanner.Err(); err != nil {
+		http.Error(w, "Error reading log file: "+err.Error(), http.StatusInternalServerError)
+	}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 	}
+}
+
+func logData() {
+	f, err := os.OpenFile(LOG_PATH, os.O_CREATE|os.O_RDWR, 0777)
+	if err != nil {
+		return
+	}
+	fData, err := os.ReadFile(LOG_PATH)
+	if err != nil {
+		return
+	}
+	fStr := string(fData)
+	for countRune(fStr, '\n') > LOG_LENGTH {
+		index := strings.Index(fStr, "\n") + 1
+		fStr = fStr[index:]
+	}
+
+	cpuData, _ := cpu.Percent(0, false)
+	cpuDataStr := strconv.FormatFloat(cpuData[0], 'f', -1, 64)
+
+	fStr += time.Now().Format(time.RFC3339) + ";" + strconv.FormatUint(mem.FreeMemory(), 10) + ";" + strconv.FormatUint(mem.TotalMemory(), 10) + ";" + cpuDataStr + "\n"
+
+	f.Truncate(0)
+	f.WriteString(fStr)
+	f.Close()
+}
+
+// https://stackoverflow.com/a/47240301
+func countRune(s string, r rune) int {
+	count := 0
+	for _, c := range s {
+		if c == r {
+			count++
+		}
+	}
+	return count
 }
