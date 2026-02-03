@@ -11,7 +11,7 @@ You can now install the Zoraxy plugin itself, by doing the following:
 mkdir -p /opt/zoraxy/plugins/zoraxyresourcemonitor
 cd /opt/zoraxy/plugins/zoraxyresourcemonitor
 # wget <LINK_TO_LATEST_BINARY>
-wget https://github.com/kris701/zoraxyresourcemonitor/releases/download/v1.0.0/zoraxyresourcemonitor
+wget https://github.com/kris701/zoraxyresourcemonitor/releases/download/v1.0.1/zoraxyresourcemonitor
 chmod +x zoraxyresourcemonitor
 ```
 

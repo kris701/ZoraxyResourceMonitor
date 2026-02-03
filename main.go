@@ -12,9 +12,6 @@ import (
 	"strings"
 	"time"
 
-	mem "github.com/pbnjay/memory"
-	cpu "github.com/shirou/gopsutil/cpu"
-
 	plugin "github.com/kris701/zoraxyresourcemonitor/mod/zoraxy_plugin"
 )
 
@@ -24,9 +21,11 @@ const (
 	WEB_ROOT  = "/www"
 	LOG_PATH  = "log.txt"
 	// Once a minute
-	LOG_DELAY = 60000
+	//LOG_DELAY = 60000
+	LOG_DELAY = 1000
 	// 1440 log entries
-	LOG_LENGTH = 1440
+	//LOG_LENGTH = 1440
+	LOG_LENGTH = 10
 )
 
 //go:embed www/*
@@ -43,7 +42,7 @@ func main() {
 		Type:          plugin.PluginType_Utilities,
 		VersionMajor:  1,
 		VersionMinor:  0,
-		VersionPatch:  0,
+		VersionPatch:  1,
 		UIPath:        UI_PATH,
 	})
 	if err != nil {
@@ -119,10 +118,9 @@ func logData() {
 		fStr = fStr[index:]
 	}
 
-	cpuData, _ := cpu.Percent(0, false)
-	cpuDataStr := strconv.FormatFloat(cpuData[0], 'f', -1, 64)
+	data := GetResourceData()
 
-	fStr += time.Now().Format(time.RFC3339) + ";" + strconv.FormatUint(mem.TotalMemory()-mem.FreeMemory(), 10) + ";" + strconv.FormatUint(mem.TotalMemory(), 10) + ";" + cpuDataStr + "\n"
+	fStr += time.Now().Format(time.RFC3339) + ";" + strconv.FormatUint(data.usedMemory, 10) + ";" + strconv.FormatUint(data.totalMemory, 10) + ";" + strconv.FormatFloat(data.cpu, 'f', -1, 64) + "\n"
 
 	f.Truncate(0)
 	f.WriteString(fStr)
