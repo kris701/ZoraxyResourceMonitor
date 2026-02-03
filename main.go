@@ -21,11 +21,11 @@ const (
 	WEB_ROOT  = "/www"
 	LOG_PATH  = "log.txt"
 	// Once a minute
-	//LOG_DELAY = 60000
-	LOG_DELAY = 1000
+	LOG_DELAY = 60000
+	//LOG_DELAY = 1000
 	// 1440 log entries
-	//LOG_LENGTH = 1440
-	LOG_LENGTH = 10
+	LOG_LENGTH = 1440
+	//LOG_LENGTH = 10
 )
 
 //go:embed www/*
@@ -42,7 +42,7 @@ func main() {
 		Type:          plugin.PluginType_Utilities,
 		VersionMajor:  1,
 		VersionMinor:  0,
-		VersionPatch:  1,
+		VersionPatch:  2,
 		UIPath:        UI_PATH,
 	})
 	if err != nil {

@@ -84,8 +84,8 @@
                     var keys = Object.keys(data)
                     keys.forEach(x => {
                         cpuValues.push({ key: new Date(x), value: parseFloat(data[x]["cpu"]) })
-                        usedMemValues.push({ key: new Date(x), value: parseFloat(data[x]["usedMemory"]) / 1000000 })
-                        maxMemValues.push({ key: new Date(x), value: parseFloat(data[x]["totalMemory"]) / 1000000 })
+                        usedMemValues.push({ key: new Date(x), value: parseFloat(data[x]["usedMemory"]) })
+                        maxMemValues.push({ key: new Date(x), value: parseFloat(data[x]["totalMemory"]) })
                     });
 
                     cpuStatisticChart.data.datasets[0].data = cpuValues.map(x => x.value);
