@@ -29,6 +29,29 @@
             word-wrap: break-word;
         }
 
+        .resourcemonitor-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .resourcemonitor-card {
+            background-color: var(--theme_bg);
+            border: 1px solid var(--theme_divider);
+            color: var(--text_color);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .resourcemonitor-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--text_color);
+        }
+
         .graphContainer {
             height: 300px
         }
@@ -56,13 +79,21 @@
         <div class="ui divider"></div>
 
         <div class="ui basic segment">
-            <div id="cpuActWrapper" class="graphContainer" style="position: relative;">
-                <canvas id="cpuActivity"></canvas>
+            <div class="resourcemonitor-dashboard">
+                <div class="resourcemonitor-card">
+                    <div class="resourcemonitor-title">CPU</div>
+                    <div id="cpuActWrapper" class="graphContainer" style="position: relative;">
+                        <canvas id="cpuActivity"></canvas>
+                    </div>
+                </div>
+                <div class="resourcemonitor-card">
+                    <div class="resourcemonitor-title">Memory</div>
+                    <div id="memActWrapper" class="graphContainer" style="position: relative;">
+                        <canvas id="memActivity"></canvas>
+                    </div>
+                </div>
             </div>
-            <div id="memActWrapper" class="graphContainer" style="position: relative;">
-                <canvas id="memActivity"></canvas>
-            </div>
-        </div>
+        </div>   
     </div>
 	
 	<script>
@@ -117,11 +148,11 @@
                     //stepped: 'middle',
                     plugins: {
                         legend: {
-                            display: true,
+                            display: false,
                             position: "right",
                         },
                         title: {
-                            display: true,
+                            display: false,
                             text: 'CPU Statistic'
                         }
                     },
@@ -175,11 +206,11 @@
                     //stepped: 'middle',
                     plugins: {
                         legend: {
-                            display: true,
+                            display: false,
                             position: "right",
                         },
                         title: {
-                            display: true,
+                            display: false,
                             text: 'Memory Statistic'
                         }
                     },
@@ -209,7 +240,7 @@
                             data: usedMemValues.map(x => value),
                             borderColor: "#484bb8",
                             borderWidth: 1,
-                            backgroundColor: 'rgba(72, 75, 184, 0.2)',
+                            backgroundColor: 'rgba(57, 61, 212, 0.2)',
                             fill: true,
                             pointStyle: false,
                         },
